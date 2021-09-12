@@ -28,3 +28,9 @@ int* addToArrayForm(int* num, int numSize, int k, int* returnSize){
     }
     return res;
 }
+int main(){
+    int x = 0;
+    int y = 0;
+    printf("Hello world\n");
+    return 0;
+}

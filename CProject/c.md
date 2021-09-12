@@ -170,3 +170,95 @@ int ** 砍掉 * 变为 int * ,仍是指针变量占用四个字节单位，所�
 
 **指针只能做加减操作，以及比较大小。**
 
+### 23.&的使用
+
+&是地址符，任何变量都可以使用&来获取地址，但不能用在常量上
+
+```C
+#include<stdio.h>
+#include<stdlib.h>
+#include<windows.h>
+struct Point{
+    int x;
+    int y;
+};
+char a;
+short b;
+int c;
+struct Point p;
+void main(){
+    a = 1;
+    b = 2;
+    printf("%x,%x,%x,%x \n",&a,&b,&c,&p);
+    system("pause");
+    return;
+}
+```
+
+![image-20210912222912297](c.assets/image-20210912222912297.png)
+
+全局变量的地址在运行前就已经给好了
+
+```bash
+10:       char a;
+11:       short b;
+12:       int c;
+13:       struct Point p;
+14:       printf("%x,%x,%x,%x \n",&a,&b,&c,&p);
+00401428   lea         eax,[ebp-14h]
+0040142B   push        eax
+0040142C   lea         ecx,[ebp-0Ch]
+0040142F   push        ecx
+00401430   lea         edx,[ebp-8]
+00401433   push        edx
+00401434   lea         eax,[ebp-4]
+00401437   push        eax
+00401438   push        offset string "%x,%x,%x,%x \n" (0042405c)
+0040143D   call        printf (00401490)
+00401442   add         esp,14h
+15:       system("pause");
+00401445   push        offset string "pause" (00424054)
+0040144A   call        system (00401550)
+0040144F   add         esp,4
+16:       return;
+17:   }
+```
+
+局部变量的地址在运行时才能确定
+
+
+
+& + 一个变量，得到的结果就是 原来的变量加个*
+
+比如：
+
+```C
+int a = 0;
+int* p1 = &a; 	//原来的变量是int，加个* 变为int*
+
+char* c;
+char** p2= &c;	//同理
+
+short*** s;
+short**** p3 = &s
+```
+
+```C
+#include<stdio.h>
+#include<stdlib.h>
+#include<windows.h>
+void main(){
+    char x;
+    char* p1;
+    char** p2;
+    char*** p3;
+    char**** p4;
+    p1 = &x;
+    p2 = &p1;
+    p3 = &p2;
+    p4 = &p3;
+    system("pause");
+    return;
+}
+```
+
