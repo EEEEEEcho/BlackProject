@@ -262,3 +262,136 @@ void main(){
 }
 ```
 
+### 23.取值运算符
+
+首先看一段代码
+
+```C
+#include<stdio.h>
+#include<windows.h>
+void main(){
+	int* a = (int*) 1;
+	printf("%x \n",*a);
+
+	system("pause");
+	return;
+}
+```
+
+其汇编代码
+
+```bash
+4:        int* a = (int*) 1;
+00401028   mov         dword ptr [ebp-4],1	//[ebp-4]是第一个局部变量的位置，1放到a这个局部变量里
+5:        printf("%x \n",*a);
+0040102F   mov         eax,dword ptr [ebp-4]//将局部变量a的值放到eax中
+00401032   mov         ecx,dword ptr [eax]	//以eax中存储的值为地址，取该地址中的值，放到ecx中
+00401034   push        ecx					//将ecx入栈
+00401035   push        offset string "%x \n" (00424024)
+0040103A   call        printf (00401190)
+0040103F   add         esp,8
+6:
+7:        system("pause");
+00401042   push        offset string "pause" (0042401c)
+00401047   call        system (00401080)
+```
+
+由上述代码可知，*取得是某一地址中存储的值
+
+编译器会如何看待  “ *指针类型 ” 的类型呢？
+
+```C
+#include<stdio.h>
+#include<windows.h>
+int*** a;
+int**** b;
+int***** c;
+int* d;
+void main(){
+    int x = *(a);
+    system("pause");
+    return;
+}
+```
+
+编译：
+
+![image-20210917100645762](c.assets/image-20210917100645762.png)
+
+可以看到，编译器对于 *(a)的结果，认为是一个int** 的类型。
+
+同理，*(b)的结果是一个 int * * * 的类型
+
+而*(d)就是一个int类型了。
+
+总结：
+
+*号 + 指针类型变量 = 指针类型  -  一个 *
+
+看另一段代码
+
+```bash
+3:        int x = 1;
+00401028   mov         dword ptr [ebp-4],1	//1存入局部变量 [ebp-4]的位置
+4:        int*p = &x;
+0040102F   lea         eax,[ebp-4]		//lea指令：取有效地址。所以这个是将[ebp-4]这个地址放到eax中
+00401032   mov         dword ptr [ebp-8],eax //将eax中存储的ebp-4的地址，存储到局部变量[ebp-8]的位置
+5:        printf("%x %x\n",p,*(p));
+# *(p)的操作
+00401035   mov         ecx,dword ptr [ebp-8]	//取[ebp-8]处存的地址，放到ecx中
+0401038   mov         edx,dword ptr [ecx]		//访问ecx中存储的地址，将该地址中存储的值放入edx
+0040103A   push        edx	//edx入栈
+# 取p的操作
+0040103B   mov         eax,dword ptr [ebp-8]	//取[ebp-8]处存的地址，放到eax中
+0040103E   push        eax		//eax入栈
+0040103F   push        offset string "%x %x\n" (00424024)
+00401044   call        printf (00401190)
+```
+
+
+
+还有一段代码
+
+```C
+#include<stdio.h>
+#include<windows.h>
+void main(){
+    int x = 1;
+    int* p = &x;
+    int** p2 = &p;
+    int*** p3 = &p2;
+    int r = *(*(*(p3)));
+    printf("%d \n",r);
+	system("pause");
+    return;
+}
+```
+
+```bash
+4:        int x = 1;
+00401028   mov         dword ptr [ebp-4],1	//1放到局部变量[ebp-4]
+5:        int* p = &x;
+0040102F   lea         eax,[ebp-4]	//局部变量[ebp-4]地址放到eax
+00401032   mov         dword ptr [ebp-8],eax //eax放到[ebp-8]
+6:        int** p2 = &p;
+00401035   lea         ecx,[ebp-8]	//[ebp-8]地址放到ecx里
+00401038   mov         dword ptr [ebp-0Ch],ecx //ecx放到[ebp-0Ch]
+7:        int*** p3 = &p2;
+0040103B   lea         edx,[ebp-0Ch] //[ebp-0Ch]放到edx里
+0040103E   mov         dword ptr [ebp-10h],edx	//edx的值放到[ebp-10h]
+8:        int r = *(*(*(p3)));
+00401041   mov         eax,dword ptr [ebp-10h]	//[ebp-10h]中的值放到eax
+00401044   mov         ecx,dword ptr [eax]
+00401046   mov         edx,dword ptr [ecx]
+00401048   mov         eax,dword ptr [edx]
+0040104A   mov         dword ptr [ebp-14h],eax
+9:        printf("%d \n",r);
+0040104D   mov         ecx,dword ptr [ebp-14h]
+00401050   push        ecx
+00401051   push        offset string "%d \n" (00422fa4)
+00401056   call        printf (00401090)
+0040105B   add         esp,8
+10:       system("pause");
+
+```
+
